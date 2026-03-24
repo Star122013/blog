@@ -1,25 +1,22 @@
 ---
 import { type CollectionEntry, getCollection } from "astro:content";
-import PostPreview from "@/components/blog/PostPreview.astro";
 import Note from "@/components/note/Note.astro";
-import SocialList from "@/components/SocialList.astro";
 import { getAllPosts } from "@/data/post";
 import PageLayout from "@/layouts/Base.astro";
 import { collectionDateSort } from "@/utils/date";
 
 // Posts
-const MAX_POSTS = 10;
+const MAX_POSTS = 25;
 const allPosts = await getAllPosts();
 const allPostsByDate = allPosts.sort(collectionDateSort) as CollectionEntry<"post">[];
 const latestPosts = allPostsByDate.slice(0, MAX_POSTS);
 
-// Pinned Posts, set to a max of 3;
-const MAX_PINNED_POSTS = 3;
-const pinnedPosts = allPostsByDate
-	.values()
-	.filter((p) => p.data.pinned)
-	.take(MAX_PINNED_POSTS)
-	.toArray();
+function toSlashDate(date: Date) {
+	const yyyy = date.getFullYear();
+	const mm = String(date.getMonth() + 1).padStart(2, "0");
+	const dd = String(date.getDate()).padStart(2, "0");
+	return `${yyyy}/${mm}/${dd}`;
+}
 
 // Notes, set to a max of 5
 const MAX_NOTES = 5;
@@ -33,33 +30,28 @@ const latestNotes = allNotes
 	<section>
 		<h1 class="title mb-12">Hello World!</h1>
 		<p class="mb-4">
-			Hi, I’m a theme for Astro, a simple starter that you can use to create your website or blog.
-			If you want to know more about how you can customise me, add more posts, and make it your own,
-			click on the GitHub icon link below and it will take you to my repo.
+			Hi, I’m StarGazer. Currently compiling my technical stack and interests..
 		</p>
-		<SocialList />
 	</section>
-	{
-		pinnedPosts.length > 0 && (
-			<section class="mt-16">
-				<h2 class="title mb-6 text-xl">Pinned Posts</h2>
-				<ul class="space-y-4" role="list">
-					{pinnedPosts.map((p) => (
-						<li class="grid gap-1 sm:grid-cols-[auto_1fr]">
-							<PostPreview post={p} />
-						</li>
-					))}
-				</ul>
-			</section>
-		)
-	}
 	<section class="mt-16">
-		<h2 class="title text-accent mb-6 text-xl"><a href="/posts/">Posts</a></h2>
-		<ul class="space-y-4" role="list">
+		<h2 class="title mb-6 text-xl">Posts</h2>
+		<ul class="space-y-3" role="list">
 			{
 				latestPosts.map((p) => (
-					<li class="grid gap-1 sm:grid-cols-[auto_1fr]">
-						<PostPreview post={p} />
+					<li class="grid gap-x-4 gap-y-1 sm:grid-cols-[90px_1fr] sm:items-baseline">
+						<time
+							class="text-muted font-semibold tabular-nums"
+							datetime={p.data.publishDate.toISOString()}
+							title={p.data.publishDate.toISOString()}
+						>
+							{toSlashDate(p.data.publishDate)}
+						</time>
+						<div>
+							{p.data.draft && <span class="text-red-500">(Draft) </span>}
+							<a class="text-link hover:text-accent" href={`/posts/${p.id}/`}>
+								{p.data.title}
+							</a>
+						</div>
 					</li>
 				))
 			}
